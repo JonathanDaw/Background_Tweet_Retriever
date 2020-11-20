@@ -42,7 +42,7 @@ def main():
                         toaster.show_toast("New Tweet", tweet.text, icon_path="twitter.ico", duration=3)
                         print("New Tweet!\n" + tweet.text + "\n")
                         recent_tweets.append(tweet.text)
-            time.sleep(3)
+            time.sleep(5)
     except KeyboardInterrupt:
         pass
 
