@@ -1,3 +1,4 @@
+import datetime
 import json
 import sys
 import time
@@ -10,14 +11,22 @@ from api_keys import *
 class streamSetup():
     
     def __init__(self, auth, listener):
-        self.stream = tweepy.Stream(auth=auth, listener=listener)
+        self.stream = tweepy.Stream(auth, listener)
     
-    def start(self, users=""):
-        users_list = []
-        for user in users:
-            users_list.append(api.get_user(user).__dict__['id_str'])
+    @staticmethod
+    def getUsersList():
+        
+        users_list = input('Enter a list of users to track their tweets: ')
+        print(users_list.split(","))
+        return users_list.split(",")
             
-        self.stream.filter(users_list)
+            
+    def start(self, users_list=""):
+        id_list = []
+        for user in users_list:
+            id_list.append(api.get_user(user).__dict__['id_str'])
+            
+        self.stream.filter(id_list, is_async=True)
         
         
 class StreamListener(tweepy.StreamListener):
@@ -28,8 +37,14 @@ class StreamListener(tweepy.StreamListener):
         
         if json_load['in_reply_to_user_id'] is None and 'retweeted_status' not in json_load.keys(): 
             text = json_load['text']
+            name = json_load['user']['name']
+            # timestamp = json_load['created_at']
+            timestamp = datetime.datetime.now()
+            print(json.dumps(name))
+            print(timestamp)
+            # print(json.dumps(timestamp))
             toaster.show_toast("New Tweet", text, icon_path="twitter.ico", duration=3)
-            print("New Tweet!\n" + json.dumps(text))
+            print("New Tweet From\n" + json.dumps(text))
             return True
         
     
@@ -44,7 +59,8 @@ if __name__ == "__main__":
     try:
         streamListener = StreamListener()
         stream = streamSetup(auth, streamListener)
-        stream.start(["every3minutes", "jacobwolf"])
+        
+        stream.start(streamSetup.getUsersList())
     
     except KeyboardInterrupt:
         sys.exit()
